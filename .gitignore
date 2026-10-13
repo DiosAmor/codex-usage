@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.private/
+*.auth.json
+auth.json
+accounts.json
+.usage.lock
+.probe-*/
+.save-*
+.install-*
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store

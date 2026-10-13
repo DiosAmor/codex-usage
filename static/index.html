@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1c2925">
+  <title>Codex Monitor · 계정 사용량</title>
+  <link rel="stylesheet" href="/app.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="nav-inner">
+      <a class="brand" href="/" aria-label="Codex Monitor 홈">
+        <span class="brand-mark" aria-hidden="true">⌘</span>
+        <span>Codex <strong>Monitor</strong></span>
+      </a>
+      <span class="nav-tab">사용량 대시보드</span>
+      <span class="local-badge"><span aria-hidden="true"></span>LOCAL ONLY</span>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="hero" aria-labelledby="page-title">
+      <div>
+        <div class="eyebrow">YOUR ACCOUNTS, AT A GLANCE</div>
+        <h1 id="page-title">Codex 사용량</h1>
+        <p class="hero-description">계정별 잔여량과 초기화권을 한곳에서 확인하세요.</p>
+      </div>
+      <div class="hero-actions">
+        <button class="button secondary" id="refresh-button" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6.1 8a7 7 0 0 1 11.7-2L20 9M4 15l2.2 3A7 7 0 0 0 18 16"/></svg>
+          <span>지금 새로고침</span>
+        </button>
+        <button class="button primary" id="add-button" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          계정 추가
+        </button>
+      </div>
+    </section>
+
+    <div class="notice" id="demo-notice" hidden>데모 화면 · 아래 값은 예시이며 실제 계정 사용량이 아닙니다.</div>
+    <div class="alert global-alert" id="connection-alert" role="status" hidden></div>
+
+    <section class="summary-grid" aria-label="계정 현황">
+      <article class="summary-card">
+        <span class="summary-label">연결된 계정</span>
+        <div class="summary-value"><span id="account-total">—</span><span class="summary-unit">개</span></div>
+        <p id="account-summary">계정 정보를 불러오는 중</p>
+        <span class="summary-symbol" aria-hidden="true">⌘</span>
+      </article>
+      <article class="summary-card">
+        <span class="summary-label">사용 가능한 초기화권</span>
+        <div class="summary-value"><span id="reset-total">—</span><span class="summary-unit" id="reset-unit">개</span></div>
+        <p id="reset-summary">사용 가능 개수를 확인하는 중</p>
+        <span class="summary-symbol ticket-symbol" aria-hidden="true">↻</span>
+      </article>
+      <article class="summary-card">
+        <span class="summary-label">잔여량 주의 계정</span>
+        <div class="summary-value"><span id="low-total">—</span><span class="summary-unit">개</span></div>
+        <p id="low-summary">잔여량 20% 이하인 계정</p>
+        <span class="summary-symbol" aria-hidden="true">◔</span>
+      </article>
+    </section>
+
+    <section class="login-area" id="login-area" aria-label="진행 중인 계정 연결" hidden></section>
+
+    <section class="accounts-section" aria-labelledby="accounts-title">
+      <div class="section-heading">
+        <div class="section-title"><h2 id="accounts-title">내 계정</h2><span class="count-badge" id="account-count">0</span></div>
+        <div class="refresh-status" id="refresh-status" role="status"><span class="status-dot"></span><span id="refresh-status-text">연결 확인 중</span></div>
+      </div>
+      <div class="account-grid" id="accounts" aria-live="polite" aria-busy="true">
+        <div class="initial-loading"><span class="spinner"></span><p>계정 정보를 불러오고 있어요.</p></div>
+      </div>
+      <div class="empty-state" id="empty-state" hidden>
+        <div class="empty-icon" aria-hidden="true">⌘</div>
+        <h3>첫 계정을 연결해 보세요</h3>
+        <p>브라우저에서 계정에 로그인하면 사용량이 자동으로 갱신됩니다.<br>다른 계정도 같은 방법으로 추가할 수 있어요.</p>
+        <button class="button primary" id="empty-add-button" type="button">계정 연결하기 <span aria-hidden="true">↗</span></button>
+        <p class="source-note" id="source-note">이 컴퓨터의 기존 Codex 로그인도 확인합니다.</p>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div><span class="footer-lock" aria-hidden="true">▣</span> 인증 정보는 이 컴퓨터에 저장됩니다.</div>
+      <div class="footer-right"><span>조회 전용 · 초기화권을 사용하지 않습니다</span><a href="https://chatgpt.com/codex/settings/usage" target="_blank" rel="noopener noreferrer">공식 사용량 페이지 <span aria-hidden="true">↗</span></a></div>
+    </footer>
+  </main>
+
+  <dialog id="account-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-description">
+    <form id="account-form">
+      <div class="dialog-header"><span class="dialog-icon" aria-hidden="true">+</span><button class="icon-button" id="dialog-close" type="button" aria-label="계정 추가 닫기">×</button></div>
+      <h2 id="dialog-title">계정 연결하기</h2>
+      <p id="dialog-description">구분하기 쉬운 이름을 정한 뒤, 브라우저에서 해당 계정에 로그인하세요.</p>
+      <label for="account-label">계정 이름</label>
+      <input id="account-label" name="label" type="text" maxlength="60" placeholder="예: 개인 계정, 업무 계정" autocomplete="off" required>
+      <p class="input-hint">이 이름은 대시보드에만 표시됩니다.</p>
+      <p class="form-error" id="form-error" role="alert" hidden></p>
+      <button class="button primary full-width" id="submit-account" type="submit">로그인 시작 <span aria-hidden="true">↗</span></button>
+      <p class="dialog-footnote">비밀번호를 이 대시보드에 입력할 필요가 없습니다.</p>
+    </form>
+  </dialog>
+
+  <dialog id="delete-dialog" aria-labelledby="delete-title" aria-describedby="delete-description">
+    <div class="dialog-header"><span class="dialog-icon danger-icon" aria-hidden="true">−</span><button class="icon-button" id="delete-close" type="button" aria-label="계정 삭제 닫기">×</button></div>
+    <h2 id="delete-title">계정 연결을 해제할까요?</h2>
+    <p id="delete-description"></p>
+    <p class="form-error" id="delete-error" role="alert" hidden></p>
+    <div class="dialog-actions"><button class="button secondary" id="delete-cancel" type="button">취소</button><button class="button danger" id="delete-confirm" type="button">연결 해제</button></div>
+  </dialog>
+  <div class="toast" id="toast" role="status" hidden></div>
+</body>
+</html>

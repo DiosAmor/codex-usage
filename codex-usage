@@ -1,0 +1,15 @@
+#!/usr/bin/env python3
+"""Run the monitor from a checkout or an installed runtime."""
+
+from pathlib import Path
+import sys
+
+if sys.version_info < (3, 11):
+    raise SystemExit("Python 3.11 이상이 필요합니다.")
+if sys.platform not in ("linux", "darwin"):
+    raise SystemExit("Linux/macOS에서 실행해 주세요. Windows에서는 WSL을 사용하세요.")
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from cli import main
+
+raise SystemExit(main())
