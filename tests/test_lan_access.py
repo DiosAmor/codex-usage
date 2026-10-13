@@ -47,7 +47,7 @@ class LanHttpTests(unittest.TestCase):
         return result
 
     def test_lan_pages_and_state_work_without_password(self):
-        for path in ("/", "/app.js", "/calendar.js", "/app.css",
+        for path in ("/", "/app.js", "/calendar.js", "/daily.js", "/daily.css", "/app.css",
                      "/api/state", "/api/reset-calendar"):
             with self.subTest(path=path):
                 status, body, headers = self.request(path=path)

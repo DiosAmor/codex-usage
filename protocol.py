@@ -18,7 +18,7 @@ class ProtocolError(RuntimeError):
 
 class CodexSession:
     ALLOWED = {"initialize", "account/login/start", "account/login/cancel",
-               "account/read", "account/rateLimits/read"}
+               "account/read", "account/rateLimits/read", "account/usage/read"}
 
     def __init__(self, home, binary="codex", refresh_tokens=None):
         self.home = Path(home)
@@ -99,6 +99,13 @@ class CodexSession:
     def request(self, method, params=None, timeout=30):
         if method not in self.ALLOWED:
             raise ProtocolError("지원하지 않는 Codex 요청입니다.")
+        if method == "account/usage/read":
+            # This monitor reads account daily totals, never individual threads.
+            if (params is not None and (not isinstance(params, dict)
+                    or set(params) - {"threadId"}
+                    or params.get("threadId") not in (None, ""))):
+                raise ProtocolError("계정 전체의 일별 토큰 조회만 지원합니다.")
+            params = {}
         with self.request_lock:
             self.counter += 1
             request_id = self.counter

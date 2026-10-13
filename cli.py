@@ -167,7 +167,7 @@ def render_reset_timing(feed, now=None):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="여러 Codex 계정의 잔여량과 초기화권을 터미널에서 확인합니다.")
-    parser.add_argument("--version", action="version", version="codex-usage 0.3.0")
+    parser.add_argument("--version", action="version", version="codex-usage 0.4.0")
     parser.add_argument("command", nargs="?", default="status", choices=["status", "watch", "login", "list", "serve"])
     parser.add_argument("name", nargs="?", help="login에서 사용할 계정 이름")
     parser.add_argument("--data-dir", type=Path, default=DEFAULT_DATA)

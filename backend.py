@@ -19,6 +19,7 @@ from urllib.parse import urlsplit
 import uuid
 
 from protocol import CodexSession, ProtocolError
+from daily_usage import DAILY_USAGE_ERROR, normalize_daily_usage, pending_token_usage
 
 
 def number(value):
@@ -176,7 +177,8 @@ class DashboardManager:
         return {"id": account_id, "label": label, "email": auth.get("email"), "plan": auth.get("plan"),
                 "source": source, "removable": True, "status": "pending", "lastSuccessAt": None,
                 "lastAttemptAt": None, "error": None, "buckets": [], "resetCredits": None,
-                "ordinaryUsageAllowed": None, "_identity": auth["identity"], "_home": home,
+                "ordinaryUsageAllowed": None, "tokenUsage": pending_token_usage(),
+                "_identity": auth["identity"], "_home": home,
                 "_sources": sources or []}
 
     def _load(self):
@@ -330,17 +332,41 @@ class DashboardManager:
                         account.update(status="ok", error=None, lastSuccessAt=time.time())
                         account["email"] = info.get("email") or account["email"]
                         account["plan"] = info.get("planType") or account["plan"]
+                # Daily history is optional. Its failure must not make successful
+                # remaining-quota polling look like an account login failure.
+                self._poll_daily_usage(account_id, account, session)
             except Exception as error:
                 safe = str(error) if isinstance(error, (ProtocolError, ValueError)) else "조회를 완료하지 못했습니다. 로그인과 네트워크를 확인해 주세요."
                 with self.lock:
                     if self.accounts.get(account_id) is account:
                         account.update(status="error", error=safe)
+                        account["tokenUsage"].update(status="error", error=DAILY_USAGE_ERROR,
+                                                     lastAttemptAt=account["lastAttemptAt"])
             finally:
                 if session:
                     self._close_session(session)
                 if temporary:
                     temporary.cleanup()
                 lock_stack.close()
+
+    def _poll_daily_usage(self, account_id, account, session):
+        attempted = time.time()
+        with self.lock:
+            if self.accounts.get(account_id) is not account or self.closed.is_set():
+                return
+            account["tokenUsage"]["lastAttemptAt"] = attempted
+        try:
+            daily = normalize_daily_usage(session.request("account/usage/read", {}, timeout=40))
+            with self.lock:
+                if self.accounts.get(account_id) is account:
+                    account["tokenUsage"].update(daily)
+                    account["tokenUsage"].update(fetchedAt=time.time(), error=None)
+        except Exception:
+            # Do not forward remote errors, URLs, credentials, or unsupported
+            # method details to the browser. Existing successful rows remain.
+            with self.lock:
+                if self.accounts.get(account_id) is account:
+                    account["tokenUsage"].update(status="error", error=DAILY_USAGE_ERROR)
 
     def refresh(self, *, after_current=False):
         with self.lock:

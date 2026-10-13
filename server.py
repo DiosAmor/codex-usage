@@ -2,6 +2,7 @@
 """Local and opt-in LAN HTTP interface for the Codex account usage monitor."""
 
 import argparse
+from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import ipaddress
 import json
@@ -122,6 +123,7 @@ class DemoManager:
 
     def state(self):
         now = time.time()
+        today = datetime.fromtimestamp(self.updated, timezone(timedelta(hours=9))).date()
         def window(remaining, minutes, delay):
             return {"usedPercent": 100 - remaining, "remainingPercent": remaining,
                     "windowDurationMins": minutes, "resetsAt": int(self.updated + delay)}
@@ -131,10 +133,21 @@ class DemoManager:
             ("작업용 계정", "work@example.com", "pro", None, 81, 0),
             ("서브 계정", "extra@example.com", "plus", 8, 24, None),
         ]):
+            daily = []
+            for days_ago in range(36, 0, -1):
+                if (days_ago + index) % 6 == 0:
+                    continue
+                tokens = ((days_ago * 19 + index * 31) % 90 + 5) * 1_000_000
+                if (days_ago + index) % 9 == 0:
+                    tokens = 0
+                daily.append({"date": (today - timedelta(days=days_ago)).isoformat(),
+                              "tokens": None if index == 2 and days_ago == 2 else str(tokens)})
             accounts.append({
                 "id": f"demo-{index}", "label": label, "email": email, "plan": plan,
                 "source": "dashboard", "removable": False, "status": "ok", "error": None,
                 "lastSuccessAt": self.updated, "lastAttemptAt": self.updated,
+                "tokenUsage": {"status": "ok", "daily": daily, "fetchedAt": self.updated,
+                               "lastAttemptAt": self.updated, "error": None, "dateBasis": "server"},
                 "buckets": [{"id": "codex", "name": "Codex", "plan": plan,
                              "primary": window(short, 300, 6300) if short is not None else None,
                              "secondary": window(week, 10080, 238000), "credits": None}],
@@ -272,6 +285,8 @@ def create_server(manager, port=8765, reset_feed=None, *, host="127.0.0.1", allo
                      "/index.html": ("index.html", "text/html; charset=utf-8"),
                      "/app.js": ("app.js", "application/javascript; charset=utf-8"),
                      "/calendar.js": ("calendar.js", "application/javascript; charset=utf-8"),
+                     "/daily.js": ("daily.js", "application/javascript; charset=utf-8"),
+                     "/daily.css": ("daily.css", "text/css; charset=utf-8"),
                      "/app.css": ("app.css", "text/css; charset=utf-8")}
             if path not in files:
                 self.send_json(404, {"error": "페이지를 찾을 수 없습니다."})

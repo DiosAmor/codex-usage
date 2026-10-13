@@ -64,7 +64,7 @@ class InstallTests(unittest.TestCase):
             if "--json" in args:
                 self.assertTrue(json.loads(result.stdout)["demo"])
             if "--version" in args:
-                self.assertIn("0.3.0", result.stdout)
+                self.assertIn("0.4.0", result.stdout)
         installed = self.prefix / "share/codex-usage"
         self.assertEqual(sorted(p.relative_to(installed).as_posix() for p in installed.rglob("*") if p.is_file() and "__pycache__" not in p.parts),
                          sorted(installer.RUNTIME_FILES))

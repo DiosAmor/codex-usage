@@ -7,6 +7,7 @@ install.sh
 install.py
 storage.py
 reset_feed.py
+daily_usage.py
 cli.py
 backend.py
 protocol.py
@@ -15,8 +16,12 @@ static/index.html
 static/app.css
 static/app.js
 static/calendar.js
+static/daily.js
+static/daily.css
 tests/test_monitor.py
 tests/test_install.py
 tests/test_reset_feed.py
 tests/test_calendar_timing.py
 tests/test_lan_access.py
+tests/test_daily_usage.py
+tests/test_daily_frontend.js
