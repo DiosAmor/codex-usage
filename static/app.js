@@ -145,6 +145,9 @@ function updateClock() {
 }
 function renderState(state) {
   ui.state = state;
+  $("access-mode").textContent = state.accessMode === "lan" ? "LOCAL NETWORK" : "LOCAL ONLY";
+  window.codexAccountState = state;
+  window.dispatchEvent(new CustomEvent("codex-account-state", { detail: state }));
   const accounts = Array.isArray(state.accounts) ? state.accounts : [], logins = Array.isArray(state.logins) ? state.logins : [];
   $("account-total").textContent = String(accounts.length); $("account-count").textContent = String(accounts.length);
   const successful = accounts.filter(account => number(account.lastSuccessAt) !== null && !account.error).length;

@@ -157,6 +157,7 @@ class DashboardManager:
         self.worker = None
         self.ignored = set()
         self.refreshing = False
+        self._refresh_pending = False
         self.closed = threading.Event()
         self.next_refresh = time.time()
         self._load()
@@ -341,26 +342,44 @@ class DashboardManager:
                     temporary.cleanup()
                 lock_stack.close()
 
-    def refresh(self):
+    def refresh(self, *, after_current=False):
         with self.lock:
-            if self.refreshing or self.closed.is_set():
+            if self.closed.is_set():
+                return self.state()
+            if self.refreshing:
+                if after_current:
+                    self._refresh_pending = True
                 return self.state()
             self.refreshing = True
-        self.worker = threading.Thread(target=self._refresh, daemon=True)
-        self.worker.start()
+            self.worker = threading.Thread(target=self._refresh, daemon=True)
+            self.worker.start()
         return self.state()
 
     def _refresh(self):
         try:
-            self._discover()
-            with self.lock:
-                ids = list(self.accounts)
-            with ThreadPoolExecutor(max_workers=3) as pool:
-                list(pool.map(self._poll_one, ids))
-        finally:
+            while True:
+                if not self.closed.is_set():
+                    self._discover()
+                    with self.lock:
+                        ids = list(self.accounts)
+                    with ThreadPoolExecutor(max_workers=3) as pool:
+                        list(pool.map(self._poll_one, ids))
+                with self.lock:
+                    if self._refresh_pending and not self.closed.is_set():
+                        # Keep refreshing true across both passes so callers
+                        # cannot mistake the earlier account snapshot for final.
+                        self._refresh_pending = False
+                        continue
+                    self.refreshing = False
+                    self._refresh_pending = False
+                    self.next_refresh = time.time() + self.interval
+                    return
+        except BaseException:
             with self.lock:
                 self.refreshing = False
+                self._refresh_pending = False
                 self.next_refresh = time.time() + self.interval
+            raise
 
     def _schedule(self):
         while not self.closed.is_set():
@@ -492,6 +511,7 @@ class DashboardManager:
     def close(self):
         self.closed.set()
         with self.lock:
+            self._refresh_pending = False
             sessions = list(self.sessions)
         for session in sessions:
             self._close_session(session)

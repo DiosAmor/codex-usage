@@ -6,6 +6,7 @@ run
 install.sh
 install.py
 storage.py
+reset_feed.py
 cli.py
 backend.py
 protocol.py
@@ -13,5 +14,9 @@ server.py
 static/index.html
 static/app.css
 static/app.js
+static/calendar.js
 tests/test_monitor.py
 tests/test_install.py
+tests/test_reset_feed.py
+tests/test_calendar_timing.py
+tests/test_lan_access.py

@@ -7,6 +7,7 @@
   <title>Codex Monitor · 계정 사용량</title>
   <link rel="stylesheet" href="/app.css">
   <script src="/app.js" defer></script>
+  <script src="/calendar.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -16,7 +17,7 @@
         <span>Codex <strong>Monitor</strong></span>
       </a>
       <span class="nav-tab">사용량 대시보드</span>
-      <span class="local-badge"><span aria-hidden="true"></span>LOCAL ONLY</span>
+      <span class="local-badge"><span aria-hidden="true"></span><span id="access-mode">LOCAL ONLY</span></span>
     </div>
   </header>
 
@@ -61,6 +62,48 @@
         <p id="low-summary">잔여량 20% 이하인 계정</p>
         <span class="summary-symbol" aria-hidden="true">◔</span>
       </article>
+    </section>
+
+    <section class="calendar-section" aria-labelledby="calendar-title">
+      <div class="section-heading calendar-section-heading">
+        <div><h2 id="calendar-title">사용 계획 캘린더</h2><p>초기화 공지와 내 계정의 한도 갱신 일정을 함께 보세요.</p></div>
+        <span class="timezone-badge">한국 시간 · KST</span>
+      </div>
+      <div class="calendar-notice" id="calendar-notice" role="status" hidden></div>
+      <div class="calendar-undated" id="calendar-undated" hidden></div>
+      <div class="calendar-card">
+        <div class="calendar-main">
+          <div class="calendar-toolbar">
+            <div class="calendar-month-nav">
+              <button class="calendar-nav-button" id="calendar-prev" type="button" aria-label="이전 달">‹</button>
+              <h3 id="calendar-month"></h3>
+              <button class="calendar-nav-button" id="calendar-next" type="button" aria-label="다음 달">›</button>
+            </div>
+            <button class="calendar-today" id="calendar-today" type="button">오늘</button>
+          </div>
+          <div class="calendar-legend" aria-label="일정 종류">
+            <span><i class="event-dot regular" aria-hidden="true"></i>사용량 초기화</span>
+            <span><i class="event-dot banked" aria-hidden="true"></i>초기화권 지급</span>
+            <span><i class="event-dot scheduled" aria-hidden="true"></i>예정 공지</span>
+            <span><i class="event-dot prediction" aria-hidden="true"></i>예측</span>
+            <span><i class="event-dot account" aria-hidden="true"></i>내 한도 갱신</span>
+            <span><i class="event-dot expiry" aria-hidden="true"></i>초기화권 만료</span>
+          </div>
+          <table class="calendar-grid" id="calendar-grid" role="grid" aria-labelledby="calendar-month" aria-describedby="calendar-keyboard-help">
+            <thead><tr><th scope="col">일</th><th scope="col">월</th><th scope="col">화</th><th scope="col">수</th><th scope="col">목</th><th scope="col">금</th><th scope="col">토</th></tr></thead>
+            <tbody id="calendar-days"></tbody>
+          </table>
+          <p class="sr-only" id="calendar-keyboard-help">화살표 키로 날짜를 이동하고 Page Up과 Page Down으로 달을 이동할 수 있습니다.</p>
+          <div class="calendar-source"><span id="calendar-feed-time">초기화 공지를 불러오는 중</span><a href="https://codex-resets.com/" target="_blank" rel="noopener noreferrer">Data from Codex Resets ↗</a></div>
+        </div>
+        <aside class="calendar-details" aria-labelledby="calendar-selected-title">
+          <div class="calendar-day-eyebrow" id="calendar-selected-weekday"></div>
+          <h3 id="calendar-selected-title"></h3>
+          <p class="calendar-detail-subtitle" id="calendar-selected-subtitle"></p>
+          <div id="calendar-day-events"></div>
+          <div class="calendar-planning-note"><span aria-hidden="true">◷</span><p>예정·예측 일정은 변경될 수 있어요. 실제 사용 가능량은 아래 내 계정에서 확인하세요.</p></div>
+        </aside>
+      </div>
     </section>
 
     <section class="login-area" id="login-area" aria-label="진행 중인 계정 연결" hidden></section>

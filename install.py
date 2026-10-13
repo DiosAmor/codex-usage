@@ -11,8 +11,8 @@ import tempfile
 
 
 RUNTIME_FILES = (
-    "codex-usage", "cli.py", "backend.py", "protocol.py", "server.py", "storage.py",
-    "static/index.html", "static/app.css", "static/app.js",
+    "codex-usage", "cli.py", "backend.py", "protocol.py", "server.py", "storage.py", "reset_feed.py",
+    "static/index.html", "static/app.css", "static/app.js", "static/calendar.js",
 )
 MARKER = "# codex-usage managed launcher"
 
